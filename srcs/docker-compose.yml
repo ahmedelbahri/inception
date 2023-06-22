@@ -1,60 +1,60 @@
 services:
-    nginx:
-        build: ./requirements/nginx
-        image: nginx
-        container_name: nginx
-        env_file:
-            - ./.env
-        depends_on:
-            - wordpress
-        networks:
-            - inception
-        ports:
-            - "443:443"
-        volumes:
-            - WP_Volume:/var/www/html
-        restart: on-failure
-    mariadb:
-        build: ./requirements/mariadb
-        image: mariadb
-        container_name: mariadb
-        env_file:
-            - ./.env
-        networks:
-            - inception
-        expose:
-            - "3306"
-        # volumes:
-        #     - DB_Volume:/var/lib/mysql
-        restart: on-failure
-    wordpress:
-        build: ./requirements/wordpress
-        image: wordpress
-        container_name: wordpress
-        env_file:
-            - ./.env
-        networks:
-            - inception
-        expose:
-            - "9000"
-        depends_on:
-            - mariadb
-        # volumes:
-        #     - WP_Volume:/var/www/html
-        restart: on-failure
+  nginx:
+    build: ./requirements/nginx
+    image: nginx
+    container_name: nginx
+    env_file:
+      - ./.env
+    depends_on:
+      - wordpress
+    networks:
+      - inception
+    ports:
+      - "443:443"
+    volumes:
+      - WP_Volume:/var/www/html
+    restart: on-failure
+  mariadb:
+    build: ./requirements/mariadb
+    image: mariadb
+    container_name: mariadb
+    env_file:
+      - ./.env
+    networks:
+      - inception
+    expose:
+      - "3306"
+    # volumes:
+    #   - DB_Volume:/var/lib/mysql
+    restart: on-failure
+  wordpress:
+    build: ./requirements/wordpress
+    image: wordpress
+    container_name: wordpress
+    env_file:
+      - ./.env
+    networks:
+      - inception
+    expose:
+      - "9000"
+    depends_on:
+      - mariadb
+    # volumes:
+    #   - WP_Volume:/var/www/html
+    restart: on-failure
 
 volumes:
-    WP_Volume:
-        driver_opts:
-            type: none
-            device: ~/WordPress/
-            o: bind
-#     DB_Volume:
-#         driver_opts:
-#             type: none
-#             device: ~/Mariadb/
-#             o: bind
+  WP_Volume:
+    driver_opts:
+      type: none
+      device: ~/WordPress/
+      o: bind
+#   DB_Volume:
+#     driver_opts:
+#       type: none
+#       device: ~/Mariadb/
+#       o: bind
 
 networks:
-    inception:
-        driver: bridge
+  inception:
+    driver: bridge
