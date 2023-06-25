@@ -1,74 +1,45 @@
-# RUN mkdir -p /run/php/
+sleep 10
+
+mkdir /run/php
 
 sed -i "s|listen = /run/php/php7.4-fpm.sock|listen = 9000|g" /etc/php/7.4/fpm/pool.d/www.conf
 
-curl -O wordpress https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
+curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar
 
-chmod +x wordpress
+chmod +x wp-cli.phar
 
-mv wordpress /usr/local/bin/wordpress
+mv wp-cli.phar /usr/local/bin/wp
 
-wp core download --allow-root --path=/var/www/html
+cd /var/www/html
 
-wp config create --allow-root \
-				 --path=/var/www/html \
-				 --dbname=$DB_NAME \
-				 --dbuser=$USER \
-				 --dbpass=$DB_PASS \
-				 --dbhost=$DB_HOST
+wp core download --path=/var/www/html --allow-root
+
+cp wp-config-sample.php wp-config.php
+
+sed -i "s/'DB_NAME', '.*'/'DB_NAME', '$DB_NAME'/" wp-config.php
+sed -i "s/'DB_USER', '.*'/'DB_USER', '$USER'/" wp-config.php
+sed -i "s/'DB_PASSWORD', '.*'/'DB_PASSWORD', '$DB_USER_PASS'/" wp-config.php
+sed -i "s/'DB_HOST', '.*'/'DB_HOST', '$DB_HOST'/" wp-config.php
 
 wp core install --allow-root \
-				--path=/var/www/html \
 				--url=$DOMAIN \
 				--title=$WP_TITLE \
-				--admin_user=$WP_ADMIN \
+				--admin_user=$USER \
 				--admin_password=$WP_ADMIN_PASS \
 				--admin_email=$WP_ADMIN_EMAIL
 
-# define( 'WP_DEBUG', true );
+wp user create $WP_USER $WP_USER_EMAIL --user_pass=userpassword \
+			   --role=author \
+			   --allow-root
 
-# define( 'WP_DEBUG_LOG', true );
+wp config set WP_CACHE 'true' --allow-root
 
-# define( 'WP_DEBUG_DISPLAY', false );
+wp config set WP_REDIS_HOST $REDIS_HOST --allow-root
 
-# define( 'WP_MEMORY_LIMIT', '256M' );
+wp config set WP_REDIS_PORT $REDIS_PORT --allow-root
 
-# define( 'WP_MAX_MEMORY_LIMIT', '512M' );
+wp plugin install redis-cache --activate --allow-root
 
-# define( 'WP_POST_REVISIONS', 3 );
+wp redis enable --allow-root
 
-# define( 'WP_AUTO_UPDATE_CORE', false );
-
-# define( 'DISALLOW_FILE_EDIT', true );
-
-# define( 'FS_METHOD', 'direct' );
-
-# define( 'WP_HOME', 'http://$DOMAIN' );
-
-# define( 'WP_SITEURL', 'http://$DOMAIN' );
-
-# PHP
-
-# wp user create --allow-root --path=/var/www/html $USER $USER@$DOMAIN --user_pass=$USER_PASS --role=author
-
-# wp user create --allow-root --path=/var/www/html $ADMIN_USER $ADMIN_EMAIL --user_pass=$ADMIN_PASS --role=administrator
-
-# wp plugin install --allow-root --path=/var/www/html akismet
-
-# wp plugin install --allow-root --path=/var/www/html hello
-
-# wp plugin install --allow-root --path=/var/www/html jetpack
-
-# wp plugin install --allow-root --path=/var/www/html wordpress-importer
-
-# wp plugin install --allow-root --path=/var/www/html wp-multibyte-patch
-
-# wp plugin install --allow-root --path=/var/www/html wp-super-cache
-
-# wp plugin install --allow-root --path=/var/www/html wpforms-lite
-
-# wp plugin install --allow-root --path=/var/www/html wp-mail-smtp
-
-# wp plugin install --allow-root --path=/var/www/html wp-optimize
-
-# wp plugin install --allow-root --path=/var/www/html wp-smushit
+/usr/sbin/php-fpm7.4 -F
