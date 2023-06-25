@@ -2,8 +2,8 @@ run: build
 	docker-compose -f ./srcs/docker-compose.yml up -d
 
 build:
-	mkdir -p ~/WordPress
-	mkdir -p ~/Mariadb
+	mkdir -p /home/ahel-bah/data/WordPress
+	mkdir -p /home/ahel-bah/data/Mariadb
 	docker-compose -f ./srcs/docker-compose.yml build
 down:
 	docker-compose -f ./srcs/docker-compose.yml down
@@ -11,7 +11,7 @@ down:
 clean:
 	docker system prune --all --force
 
-fclean:
+fclean: down
 	docker system prune --all --volumes --force
 
-re: down fclean run
+re: fclean run
